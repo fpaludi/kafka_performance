@@ -42,13 +42,17 @@ class QueueProducer:
             if not self._queue.empty():
                 message = self._queue.get()
                 self._logger.info(value=message, verb="GET", qsize=self._queue.qsize())
-                self._producer.send(value=message, topic=self._topic)
+                future = self._producer.send(value=message, topic=self._topic)
+                future.add_errback(self._error_callback, message)
                 if self._use_flush:
                     self._producer.flush(timeout=100)
 
     def send(self, message: str):
         self._logger.info(value=message, verb="PUT", qsize=self._queue.qsize())
         self._queue.put(message)
+
+    def _error_callback(self, message: str):
+        self._logger.error(f"Error sending {message}")
 
     def _serializer(self, message: str):
         return message.encode()
