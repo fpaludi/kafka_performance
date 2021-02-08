@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "kafka_perfo"
+version = "0.1.0"
+description = "evaluation"
+authors = ["F. Paludi <francopaludi2@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+pydantic = "^1.7.0"
+dependency-injector = "^3.20"
+kafka-python = "^2.0.0"
+structlog = "^20.2.0"
+colorama = "^0.4.0"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.8"
+
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
