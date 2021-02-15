@@ -14,7 +14,7 @@ def configure_logger():
             "disable_existing_loggers": False,
             "formatters": {
                 "plain": {
-                    "()": structlog.stdlib.ProcessorFormatter,
+                    # "()": structlog.stdlib.ProcessorFormatter,
                     "processor": structlog.processors.JSONRenderer(
                         sort_keys=True, serializer=rapidjson.dumps
                     ),
@@ -39,17 +39,25 @@ def configure_logger():
                     "formatter": "plain",
                 },
                 "logstash": {
-                    'level': 'INFO',
-                    'class': 'logstash.LogstashHandler',
-                    'host': 'logstash',
-                    'port': 5000,
+                    "level": "INFO",
+                    "class": "logstash.LogstashHandler",
+                    "host": "logstash",
+                    "port": 5000,
                     "version": 1,
+                },
+                "queue_listener": {
+                    "class": "logger_queue_handler.QueueListenerHandler",
+                    "handlers": [
+                        "cfg://handlers.file",
+                        "cfg://handlers.logstash",
+                    ],
                 },
             },
             "loggers": {
                 "": {
-                    "handlers": ["default", "logstash", "file"],
+                    "handlers": ["default", "queue_listener"],
                     "level": logging.INFO,
+                    "propagate": False,
                 },
             },
         }
@@ -75,6 +83,4 @@ def configure_logger():
 
 def get_logger(name: str) -> logging.Logger:
     return structlog.get_logger(name)
-
-# https://medium.com/@ruanbekker/get-application-performance-metrics-on-python-flask-with-elastic-apm-on-kibana-and-elasticsearch-2859ea02ae30
 

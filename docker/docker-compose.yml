@@ -70,11 +70,11 @@ services:
     image: docker.elastic.co/logstash/logstash:7.10.2
     volumes:
       - type: bind
-        source: $PWD/logstash/logstash.yml
+        source: $PWD/elk/logstash/logstash.yml
         target: /usr/share/logstash/config/logstash.yml
         read_only: true
       - type: bind
-        source: $PWD/logstash/pipeline
+        source: $PWD/elk/logstash/pipeline
         target: /usr/share/logstash/pipeline
         read_only: true
     ports:
