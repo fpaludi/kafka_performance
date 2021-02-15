@@ -8,7 +8,7 @@ from settings import settings
 
 class QueueProducer:
 
-    MAX_BLOCK_MS = 100
+    MAX_BLOCK_MS = 1000
 
     def __init__(
         self,

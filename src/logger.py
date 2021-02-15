@@ -1,6 +1,9 @@
 import logging
 import logging.config
 import structlog
+import rapidjson
+import logstash
+from logstash import LogstashHandler
 from settings import settings
 
 
@@ -12,7 +15,9 @@ def configure_logger():
             "formatters": {
                 "plain": {
                     "()": structlog.stdlib.ProcessorFormatter,
-                    "processor": structlog.processors.JSONRenderer(sort_keys=True),
+                    "processor": structlog.processors.JSONRenderer(
+                        sort_keys=True, serializer=rapidjson.dumps
+                    ),
                 },
                 "colored": {
                     "()": structlog.stdlib.ProcessorFormatter,
@@ -21,36 +26,44 @@ def configure_logger():
             },
             "handlers": {
                 "default": {
-                    "level": settings.LOG_LEGEL,
+                    "level": settings.CONSOLE_LOG_LEVEL,
                     "class": "logging.StreamHandler",
                     "formatter": "colored",
                 },
                 "file": {
-                    "level": logging.INFO,
+                    "level": settings.FILE_LOG_LEVEL,
                     "class": "logging.handlers.TimedRotatingFileHandler",
                     "filename": "kafka_performance.log",
                     "when": "d",
                     "backupCount": 3,
                     "formatter": "plain",
                 },
+                "logstash": {
+                    'level': 'INFO',
+                    'class': 'logstash.LogstashHandler',
+                    'host': 'logstash',
+                    'port': 5000,
+                    "version": 1,
+                },
             },
             "loggers": {
                 "": {
-                    "handlers": ["default", "file"],
-                    "level": settings.LOG_LEGEL,
-                    "propagate": True,
+                    "handlers": ["default", "logstash", "file"],
+                    "level": logging.INFO,
                 },
             },
         }
     )
     structlog.configure(
         processors=[
+            structlog.stdlib.filter_by_level,
             structlog.stdlib.add_logger_name,
             structlog.stdlib.add_log_level,
             structlog.stdlib.PositionalArgumentsFormatter(),
             structlog.processors.TimeStamper(fmt="iso"),
             structlog.processors.StackInfoRenderer(),
             structlog.processors.format_exc_info,
+            # structlog.stdlib.render_to_log_kwargs,
             structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
         ],
         context_class=dict,
@@ -62,3 +75,6 @@ def configure_logger():
 
 def get_logger(name: str) -> logging.Logger:
     return structlog.get_logger(name)
+
+# https://medium.com/@ruanbekker/get-application-performance-metrics-on-python-flask-with-elastic-apm-on-kibana-and-elasticsearch-2859ea02ae30
+

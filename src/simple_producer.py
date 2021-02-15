@@ -4,7 +4,7 @@ from logger import get_logger
 
 
 class SimpleProducer:
-    MAX_BLOCK_MS = 100
+    MAX_BLOCK_MS = 1000
 
     def __init__(
         self,
